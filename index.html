@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smart GST Billing — Sammy Kura</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="logo-area">
+    <div class="logo-brand">
+      <div class="logo-icon">🧾</div>
+      <div>
+        <h1>Samy & Sons</h1>
+        <p>GST Invoice System</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-lbl">Main</div>
+      <button class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">🏠</span> Dashboard</button>
+      <button class="nav-item" onclick="nav('invoice',this)"><span class="nav-icon">🧾</span> New Invoice</button>
+      <button class="nav-item" onclick="nav('history',this)"><span class="nav-icon">📋</span> Invoice History</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-lbl">Masters</div>
+      <button class="nav-item" onclick="nav('clients',this)"><span class="nav-icon">👥</span> Clients</button>
+      <button class="nav-item" onclick="nav('products',this)"><span class="nav-icon">📦</span> Products</button>
+      <button class="nav-item" onclick="nav('company',this)"><span class="nav-icon">🏢</span> GST Companies</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-lbl">Fleet Management</div>
+      <button class="nav-item" onclick="nav('fleet',this)"><span class="nav-icon">🚛</span> Fleet</button>
+      <button class="nav-item" onclick="nav('drivers',this)"><span class="nav-icon">👤</span> Drivers</button>
+      <button class="nav-item" onclick="nav('renewals',this)"><span class="nav-icon">📅</span> Renewals</button>
+      <button class="nav-item" onclick="nav('fuel',this)"><span class="nav-icon">⛽</span> Fuel Tracker</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-lbl">Finance</div>
+      <button class="nav-item" onclick="nav('expense',this)"><span class="nav-icon">💸</span> Expense</button>
+      <button class="nav-item" onclick="nav('reports',this)"><span class="nav-icon">📊</span> Reports</button>
+      <button class="nav-item" onclick="nav('customers',this)"><span class="nav-icon">🧑‍💼</span> Customers</button>
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="theme-toggle" onclick="toggleTheme()">
+      <span id="themeIcon">☀️</span>
+      <span id="themeLabel">Light Mode</span>
+    </button>
+    <div class="ver-lbl">Sammy Kura Billing v4.0</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="btn btn-ghost btn-sm no-print" onclick="toggleSidebar()" style="display:none;padding:6px 8px;" id="menuBtn">☰</button>
+      <h2 id="pageTitle">Dashboard</h2>
+    </div>
+    <div class="topbar-right">
+      <button class="btn btn-primary btn-sm" onclick="nav('invoice',null)">+ New Invoice</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="section active" id="sec-dashboard">
+      <div class="sec-hd">
+        <div>
+          <div class="sec-title">Dashboard</div>
+          <div class="sec-sub" id="dash-date"></div>
+        </div>
+      </div>
+      <div class="g4" style="margin-bottom:18px;">
+        <div class="stat"><div class="stat-icon">🧾</div><div class="stat-val" id="s-total">0</div><div class="stat-lbl">Total Invoices</div></div>
+        <div class="stat"><div class="stat-icon">💰</div><div class="stat-val" id="s-revenue">₹0</div><div class="stat-lbl">Total Revenue</div></div>
+        <div class="stat"><div class="stat-icon">👥</div><div class="stat-val" id="s-clients">0</div><div class="stat-lbl">Total Clients</div></div>
+        <div class="stat"><div class="stat-icon">⏳</div><div class="stat-val" id="s-pending">₹0</div><div class="stat-lbl">Pending Amount</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:18px;">
+        <div class="stat" style="background:linear-gradient(135deg,var(--accent-dim),var(--card));"><div class="stat-icon">🚛</div><div class="stat-val" id="s-fleet">5</div><div class="stat-lbl">Active Vehicles</div></div>
+        <div class="stat" style="background:linear-gradient(135deg,var(--violet-dim),var(--card));"><div class="stat-icon">👤</div><div class="stat-val" id="s-drivers">5</div><div class="stat-lbl">Active Drivers</div></div>
+      </div>
+      <div class="card">
+        <div class="card-hd">
+          <div class="card-title">Recent Invoices</div>
+          <button class="btn btn-ghost btn-sm" onclick="nav('history',null)">View All →</button>
+        </div>
+        <div id="recentInvList"></div>
+      </div>
+    </div>
+
+    <!-- ===== NEW INVOICE ===== -->
+    <div class="section" id="sec-invoice">
+      <div class="seller-banner" id="sellerBanner">
+        <div class="seller-banner-select">
+          <label class="form-lbl" style="display:block;margin-bottom:5px;">Billing Under (Seller GSTIN)</label>
+          <select class="form-ctrl" id="inv-seller" onchange="onSellerChange()" style="background:var(--inp-bg);">
+            <option value="">-- Select GST Company --</option>
+          </select>
+        </div>
+        <div id="sellerInfoBox" style="display:none;">
+          <div class="seller-name-lbl" id="sellerNameLbl">—</div>
+          <div class="seller-state-lbl" id="sellerStateLbl">—</div>
+          <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="seller-chip" id="sellerGstinChip">—</span>
+            <span class="seller-chip" id="sellerStateCodeChip" style="background:var(--green-dim);border-color:rgba(16,185,129,.3);color:var(--green);">—</span>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd"><div class="card-title">Invoice Details</div></div>
+        <div class="g4">
+          <div class="form-row"><label class="form-lbl">Invoice No</label><input class="form-ctrl" id="inv-no" readonly style="font-family:monospace;font-weight:700;color:var(--accent);"></div>
+          <div class="form-row"><label class="form-lbl">Date</label><input type="date" class="form-ctrl" id="inv-date"></div>
+          <div class="form-row"><label class="form-lbl">Payment Method</label>
+            <select class="form-ctrl" id="inv-pay">
+              <option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Cheque</option><option>Credit</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-lbl">Status</label>
+            <select class="form-ctrl" id="inv-status">
+              <option>Paid</option><option>Unpaid</option><option>Partial</option><option>Draft</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd">
+          <div class="card-title">Bill To (Customer)</div>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('clientModal')">+ Add New Client</button>
+        </div>
+        <div class="form-row" style="margin-bottom:14px;">
+          <label class="form-lbl">Select Client</label>
+          <select class="form-ctrl" id="inv-client-select" onchange="selectClientFromDropdown(this.value)" style="cursor:pointer;">
+            <option value="">-- Select Client --</option>
+          </select>
+        </div>
+        <div class="g3">
+          <div class="form-row">
+            <label class="form-lbl">Customer Name *</label>
+            <input class="form-ctrl" id="inv-custname" placeholder="Type name or mobile…" autocomplete="off">
+          </div>
+          <div class="form-row"><label class="form-lbl">Mobile *</label><input class="form-ctrl" id="inv-custmobile" placeholder="98765 43210" maxlength="15"></div>
+          <div class="form-row"><label class="form-lbl">Customer GSTIN</label><input class="form-ctrl" id="inv-custgst" placeholder="33AABCS1429B1ZB" maxlength="20" style="text-transform:uppercase;"></div>
+        </div>
+        <div style="margin-top:12px;">
+          <div class="form-row"><label class="form-lbl">Customer Address</label><textarea class="form-ctrl" id="inv-custaddr" rows="2" placeholder="Street, City, State, PIN"></textarea></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd"><div class="card-title">🚛 Vehicle & Driver Details <span style="font-size:10px;color:var(--text3);font-weight:400;text-transform:none;letter-spacing:0;">(Optional)</span></div></div>
+        <div class="g2">
+          <div class="form-row vehicle-field"><label class="form-lbl">Vehicle / Lorry Number</label><input class="form-ctrl" id="inv-vehicle" placeholder="TN 39 AB 1234" style="text-transform:uppercase;font-weight:700;letter-spacing:.5px;"></div>
+          <div class="form-row"><label class="form-lbl">Driver Name</label><input class="form-ctrl" id="inv-driver" placeholder="Driver full name"></div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-hd">
+          <div class="card-title">Products / Items</div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:var(--text2);">Rate Type:</span>
+            <div class="gst-switch">
+              <button class="gst-btn on" id="gst-excl" onclick="setGSTMode('exclusive')">Excl. GST</button>
+              <button class="gst-btn" id="gst-incl" onclick="setGSTMode('inclusive')">Incl. GST</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="addItemRow()">+ Add Row</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:10px;" id="gstModeHint">
+          💡 <strong>Excl. GST:</strong> Enter base rate — GST will be added on top. Total = Rate + Tax.
+        </div>
+        <div class="tbl-wrap">
+          <table class="items-tbl">
+            <thead>
+              <tr>
+                <th style="width:30px;">#</th>
+                <th style="min-width:160px;">Product / Description</th>
+                <th style="width:90px;">HSN/SAC</th>
+                <th style="width:60px;">Unit</th>
+                <th style="width:65px;">Qty</th>
+                <th style="width:90px;">Rate (₹)</th>
+                <th style="width:70px;">GST %</th>
+                <th style="width:90px;">Taxable (₹)</th>
+                <th style="width:80px;">CGST (₹)</th>
+                <th style="width:80px;">SGST (₹)</th>
+                <th style="width:100px;">Total (₹)</th>
+                <th style="width:36px;"></th>
+              </tr>
+            </thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+        </div>
+        <div class="totals-wrap">
+          <div class="totals-box">
+            <div class="tot-row"><span style="color:var(--text2);">Taxable Amount</span><span id="t-taxable">₹0.00</span></div>
+            <div class="tot-row"><span style="color:var(--text2);">CGST</span><span id="t-cgst">₹0.00</span></div>
+            <div class="tot-row"><span style="color:var(--text2);">SGST</span><span id="t-sgst">₹0.00</span></div>
+            <div class="tot-row"><span style="color:var(--text2);">Total GST</span><span id="t-totalgst">₹0.00</span></div>
+            <hr class="tot-sep">
+            <div class="tot-row"><span style="color:var(--text2);">Round Off</span><span id="t-round">₹0.00</span></div>
+            <div class="tot-row grand"><span>Grand Total</span><span id="t-grand">₹0.00</span></div>
+            <div class="paid-input-row">
+              <label class="form-lbl">Paid Amount (₹)</label>
+              <input type="number" class="form-ctrl" id="inv-paid" placeholder="0.00" min="0" step="0.01" oninput="calcPaidBalance()">
+            </div>
+            <div class="tot-row paid-row" style="margin-top:8px;"><span>Paid</span><span id="t-paid">₹0.00</span></div>
+            <div class="tot-row balance-row"><span>Balance Due</span><span id="t-balance">₹0.00</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="card-title" style="margin-bottom:10px;">Notes / Remarks</div>
+        <textarea class="form-ctrl" id="inv-notes" placeholder="Optional notes…" rows="2"></textarea>
+      </div>
+      <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="saveInvoice()">💾 Save Invoice</button>
+        <button class="btn btn-success" onclick="printInvoice()">🖨 Print / PDF</button>
+        <button class="btn btn-ghost" onclick="resetInvoice()">↺ Reset</button>
+      </div>
+    </div>
+
+    <!-- ===== HISTORY ===== -->
+    <div class="section" id="sec-history">
+      <div class="sec-hd">
+        <div><div class="sec-title">Invoice History</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input class="form-ctrl" style="width:160px;" placeholder="🔍 Search…" id="histSearch" oninput="renderHistory()">
+          <select class="form-ctrl" style="width:120px;" id="histStatus" onchange="renderHistory()">
+            <option value="">All Status</option>
+            <option>Paid</option><option>Unpaid</option><option>Partial</option><option>Draft</option>
+          </select>
+        </div>
+      </div>
+      <div class="card"><div id="histList"></div></div>
+    </div>
+
+    <!-- ===== CLIENTS ===== -->
+    <div class="section" id="sec-clients">
+      <div class="sec-hd">
+        <div><div class="sec-title">Clients</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:180px;" placeholder="🔍 Search name/mobile…" id="clientSearch" oninput="renderClients()">
+          <select class="form-ctrl" style="width:120px;" id="clientTypeFilter" onchange="renderClients()">
+            <option value="">All Types</option>
+            <option value="Regular">Regular</option>
+            <option value="Corporate">Corporate</option>
+            <option value="VIP">VIP</option>
+          </select>
+          <button class="btn btn-primary" onclick="openModal('clientModal')">+ Add Client</button>
+        </div>
+      </div>
+      <div class="g3" id="clientGrid"></div>
+    </div>
+
+    <!-- ===== PRODUCTS ===== -->
+    <div class="section" id="sec-products">
+      <div class="sec-hd">
+        <div><div class="sec-title">Product Master</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:180px;" placeholder="🔍 Search product…" id="prodSearch" oninput="renderProducts()">
+          <select class="form-ctrl" style="width:110px;" id="prodGstFilter" onchange="renderProducts()">
+            <option value="">All GST</option>
+            <option value="0">0%</option>
+            <option value="5">5%</option>
+            <option value="12">12%</option>
+            <option value="18">18%</option>
+            <option value="28">28%</option>
+          </select>
+          <button class="btn btn-primary" onclick="toggleProdForm()">+ Add Product</button>
+        </div>
+      </div>
+      <div class="inline-form" id="prodInlineForm">
+        <h4><span id="prodFormTitle">Add Product</span></h4>
+        <input type="hidden" id="pm-id">
+        <div class="g2" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Product Name *</label><input class="form-ctrl" id="pm-name" placeholder="e.g. UltraTech Cement PPC"></div>
+          <div class="form-row"><label class="form-lbl">HSN / SAC Code</label><input class="form-ctrl" id="pm-hsn" placeholder="e.g. 25232930"></div>
+        </div>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Default Rate (₹)</label><input type="number" class="form-ctrl" id="pm-rate" placeholder="0.00" min="0"></div>
+          <div class="form-row"><label class="form-lbl">Unit</label>
+            <select class="form-ctrl" id="pm-unit">
+              <option>Bag</option><option>Kg</option><option>Ton</option><option>Litre</option><option>Nos</option><option>Box</option><option>Pcs</option><option>MT</option><option>Trip</option><option>Load</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-lbl">GST %</label>
+            <select class="form-ctrl" id="pm-gst">
+              <option value="0">0% (Exempt)</option><option value="5">5%</option><option value="12">12%</option><option value="18" selected>18%</option><option value="28">28%</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-lbl">Icon / Emoji</label><input class="form-ctrl" id="pm-icon" placeholder="🏗️" maxlength="4"></div>
+          <div class="form-row"><label class="form-lbl">Category</label>
+            <select class="form-ctrl" id="pm-cat">
+              <option value="Transport">Transport</option>
+              <option value="Cement">Cement</option>
+              <option value="Sand">Sand</option>
+              <option value="Bricks">Bricks</option>
+              <option value="Jelly">Jelly</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+          <button class="btn btn-ghost" onclick="toggleProdForm(false)">Cancel</button>
+        </div>
+      </div>
+      <div class="g3" id="productGrid"></div>
+    </div>
+
+    <!-- ===== GST COMPANIES ===== -->
+    <div class="section" id="sec-company">
+      <div class="sec-hd">
+        <div><div class="sec-title">GST Companies</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:180px;" placeholder="🔍 Search company…" id="compSearch" oninput="renderCompanies()">
+          <button class="btn btn-primary" onclick="toggleGcoForm()">+ Add GST Company</button>
+        </div>
+      </div>
+      <div class="inline-form" id="gcoInlineForm">
+        <h4><span id="gcoFormTitle">Add GST Company</span></h4>
+        <input type="hidden" id="gco-id">
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="form-row" style="grid-column:span 2"><label class="form-lbl">Company Name *</label><input class="form-ctrl" id="gco-name" placeholder="e.g. SK Blue Metals Pvt Ltd"></div>
+          <div class="form-row"><label class="form-lbl">GSTIN *</label><input class="form-ctrl" id="gco-gstin" placeholder="33ABCDE1234F1Z5" maxlength="15" style="text-transform:uppercase;"></div>
+        </div>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">State *</label><input class="form-ctrl" id="gco-state" placeholder="Tamil Nadu"></div>
+          <div class="form-row"><label class="form-lbl">State Code *</label><input class="form-ctrl" id="gco-scode" placeholder="33" maxlength="2"></div>
+          <div class="form-row" style="grid-column:span 2"><label class="form-lbl">Address</label><input class="form-ctrl" id="gco-addr" placeholder="City, State"></div>
+        </div>
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Phone</label><input class="form-ctrl" id="gco-phone" placeholder="Contact number"></div>
+          <div class="form-row"><label class="form-lbl">Email</label><input class="form-ctrl" id="gco-email" placeholder="business@email.com"></div>
+          <div class="form-row"><label class="form-lbl">Bank Name</label><input class="form-ctrl" id="gco-bank" placeholder="City Union Bank"></div>
+        </div>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Account No</label><input class="form-ctrl" id="gco-acno" placeholder="510909010296124"></div>
+          <div class="form-row"><label class="form-lbl">IFSC Code</label><input class="form-ctrl" id="gco-ifsc" placeholder="CIUB0000190"></div>
+          <div class="form-row"><label class="form-lbl">Branch</label><input class="form-ctrl" id="gco-branch" placeholder="Branch name"></div>
+          <div class="form-row"><label class="form-lbl">A/C Holder</label><input class="form-ctrl" id="gco-holder" placeholder="Account holder name"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveGstCompany()">Save Company</button>
+          <button class="btn btn-ghost" onclick="toggleGcoForm(false)">Cancel</button>
+        </div>
+      </div>
+      <div class="g2" id="companyGrid"></div>
+    </div>
+
+    <!-- ===== FLEET ===== -->
+    <div class="section" id="sec-fleet">
+      <div class="sec-hd">
+        <div><div class="sec-title">Fleet Management</div><div class="sec-sub">Manage all vehicles in your fleet</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:160px;" placeholder="🔍 Vehicle / driver…" id="fleetSearch" oninput="renderFleet()">
+          <select class="form-ctrl" style="width:140px;" id="fleetStatusFilter" onchange="renderFleet()">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Under Maintenance">Maintenance</option>
+            <option value="Idle">Idle</option>
+            <option value="Out of Service">Out of Service</option>
+          </select>
+          <button class="btn btn-primary" onclick="openFleetForm()">+ Add Vehicle</button>
+        </div>
+      </div>
+      <div class="inline-form" id="fleetInlineForm">
+        <h4><span id="fleetFormTitle">Add Vehicle</span></h4>
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Vehicle No *</label><input class="form-ctrl" id="fl-no" placeholder="TN 39 AB 1234" style="text-transform:uppercase;font-weight:700;"></div>
+          <div class="form-row"><label class="form-lbl">Type</label>
+            <select class="form-ctrl" id="fl-type">
+              <option>Lorry</option><option>Mini Truck</option><option>Tipper</option><option>Trailer</option><option>JCB</option><option>Car</option><option>Van</option><option>Auto</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-lbl">Make / Model</label><input class="form-ctrl" id="fl-model" placeholder="e.g. Tata 407"></div>
+        </div>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Year</label><input class="form-ctrl" id="fl-year" placeholder="2022" maxlength="4"></div>
+          <div class="form-row"><label class="form-lbl">Owner Name</label><input class="form-ctrl" id="fl-owner" placeholder="Owner full name"></div>
+          <div class="form-row"><label class="form-lbl">Assigned Driver</label><input class="form-ctrl" id="fl-driver" placeholder="Driver name"></div>
+          <div class="form-row"><label class="form-lbl">Status</label>
+            <select class="form-ctrl" id="fl-status">
+              <option>Active</option><option>Under Maintenance</option><option>Idle</option><option>Out of Service</option>
+            </select>
+          </div>
+        </div>
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Insurance Expiry</label><input type="date" class="form-ctrl" id="fl-ins"></div>
+          <div class="form-row"><label class="form-lbl">FC Expiry</label><input type="date" class="form-ctrl" id="fl-fc"></div>
+          <div class="form-row"><label class="form-lbl">Permit Expiry</label><input type="date" class="form-ctrl" id="fl-permit"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveFleet()">Save Vehicle</button>
+          <button class="btn btn-ghost" onclick="closeFleetForm()">Cancel</button>
+        </div>
+      </div>
+      <div class="g3" id="fleetGrid"></div>
+    </div>
+
+    <!-- ===== DRIVERS ===== -->
+    <div class="section" id="sec-drivers">
+      <div class="sec-hd">
+        <div><div class="sec-title">Drivers</div><div class="sec-sub">Manage driver profiles & documents</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:160px;" placeholder="🔍 Name / vehicle…" id="driverSearch" oninput="renderDrivers()">
+          <select class="form-ctrl" style="width:110px;" id="driverStatusFilter" onchange="renderDrivers()">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="On Leave">On Leave</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+          <button class="btn btn-primary" onclick="openDriverForm()">+ Add Driver</button>
+        </div>
+      </div>
+      <div class="inline-form" id="driverInlineForm">
+        <h4><span id="driverFormTitle">Add Driver</span></h4>
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Driver Name *</label><input class="form-ctrl" id="drv-name" placeholder="Full name"></div>
+          <div class="form-row"><label class="form-lbl">Mobile *</label><input class="form-ctrl" id="drv-mobile" placeholder="9XXXXXXXXX" maxlength="15"></div>
+          <div class="form-row"><label class="form-lbl">License No *</label><input class="form-ctrl" id="drv-lic" placeholder="TN3720100012345" style="text-transform:uppercase;"></div>
+        </div>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">License Expiry</label><input type="date" class="form-ctrl" id="drv-licexp"></div>
+          <div class="form-row"><label class="form-lbl">Aadhar No</label><input class="form-ctrl" id="drv-aadhar" placeholder="XXXX XXXX XXXX" maxlength="14"></div>
+          <div class="form-row"><label class="form-lbl">Assigned Vehicle</label><input class="form-ctrl" id="drv-vehicle" placeholder="Vehicle No"></div>
+          <div class="form-row"><label class="form-lbl">Status</label>
+            <select class="form-ctrl" id="drv-status"><option>Active</option><option>On Leave</option><option>Inactive</option></select>
+          </div>
+        </div>
+        <div class="g2" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Address</label><textarea class="form-ctrl" id="drv-addr" rows="2" placeholder="Street, City, State"></textarea></div>
+          <div class="form-row"><label class="form-lbl">Emergency Contact</label><input class="form-ctrl" id="drv-emg" placeholder="Emergency contact number"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveDriver()">Save Driver</button>
+          <button class="btn btn-ghost" onclick="closeDriverForm()">Cancel</button>
+        </div>
+      </div>
+      <div class="g3" id="driversGrid"></div>
+    </div>
+
+    <!-- ===== RENEWALS ===== -->
+    <div class="section" id="sec-renewals">
+      <div class="sec-hd">
+        <div><div class="sec-title">Renewals</div><div class="sec-sub">Track document expiry & renewal alerts</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:150px;" placeholder="🔍 Vehicle no…" id="renewalSearch" oninput="renderRenewals()">
+          <select class="form-ctrl" style="width:130px;" id="renewalTypeFilter" onchange="renderRenewals()">
+            <option value="">All Types</option>
+            <option value="Insurance">Insurance</option>
+            <option value="FC (Fitness Certificate)">FC</option>
+            <option value="Permit">Permit</option>
+            <option value="Road Tax">Road Tax</option>
+            <option value="PUC">PUC</option>
+            <option value="Driver License">Driver License</option>
+          </select>
+          <button class="btn btn-primary" onclick="openRenewalForm()">+ Add Renewal</button>
+        </div>
+      </div>
+      <div class="inline-form" id="renewalInlineForm">
+        <h4><span id="renewalFormTitle">Add Renewal</span></h4>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Vehicle / Item *</label><input class="form-ctrl" id="ren-vehicle" placeholder="e.g. TN39AB1234"></div>
+          <div class="form-row"><label class="form-lbl">Document Type *</label>
+            <select class="form-ctrl" id="ren-type">
+              <option>Insurance</option><option>FC (Fitness Certificate)</option><option>Permit</option><option>Road Tax</option><option>PUC</option><option>Driver License</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-lbl">Expiry Date *</label><input type="date" class="form-ctrl" id="ren-exp"></div>
+          <div class="form-row"><label class="form-lbl">Cost (₹)</label><input type="number" class="form-ctrl" id="ren-cost" placeholder="0.00"></div>
+        </div>
+        <div class="form-row" style="margin-bottom:12px;"><label class="form-lbl">Notes</label><input class="form-ctrl" id="ren-notes" placeholder="Any notes about this renewal"></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveRenewal()">Save Renewal</button>
+          <button class="btn btn-ghost" onclick="closeRenewalForm()">Cancel</button>
+        </div>
+      </div>
+      <div id="renewalsList"></div>
+    </div>
+
+    <!-- ===== FUEL TRACKER ===== -->
+    <div class="section" id="sec-fuel">
+      <div class="sec-hd">
+        <div><div class="sec-title">Fuel Tracker</div><div class="sec-sub">Monitor fuel expenses & mileage</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:150px;" placeholder="🔍 Vehicle / driver…" id="fuelSearch" oninput="renderFuel()">
+          <select class="form-ctrl" style="width:110px;" id="fuelVehicleFilter" onchange="renderFuel()">
+            <option value="">All Vehicles</option>
+          </select>
+          <button class="btn btn-primary" onclick="openFuelForm()">+ Add Entry</button>
+        </div>
+      </div>
+      <div class="inline-form" id="fuelInlineForm">
+        <h4>Add Fuel Entry</h4>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Date *</label><input type="date" class="form-ctrl" id="fu-date"></div>
+          <div class="form-row"><label class="form-lbl">Vehicle No *</label><input class="form-ctrl" id="fu-vehicle" placeholder="TN 39 AB 1234" style="text-transform:uppercase;"></div>
+          <div class="form-row"><label class="form-lbl">Litres *</label><input type="number" class="form-ctrl" id="fu-litres" placeholder="0.00" step="0.01"></div>
+          <div class="form-row"><label class="form-lbl">Rate/Litre (₹)</label><input type="number" class="form-ctrl" id="fu-rate" placeholder="0.00" step="0.01"></div>
+        </div>
+        <div class="g3" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Odometer (km)</label><input type="number" class="form-ctrl" id="fu-odo" placeholder="e.g. 45000"></div>
+          <div class="form-row"><label class="form-lbl">Fuel Station</label><input class="form-ctrl" id="fu-station" placeholder="Station name or location"></div>
+          <div class="form-row"><label class="form-lbl">Driver</label><input class="form-ctrl" id="fu-driver" placeholder="Driver name"></div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveFuel()">Save Entry</button>
+          <button class="btn btn-ghost" onclick="closeFuelForm()">Cancel</button>
+        </div>
+      </div>
+      <div class="g4" style="margin-bottom:18px;">
+        <div class="stat"><div class="stat-icon">⛽</div><div class="stat-val" id="fu-s-total">₹0</div><div class="stat-lbl">Total Fuel Cost</div></div>
+        <div class="stat"><div class="stat-icon">🪣</div><div class="stat-val" id="fu-s-litres">0 L</div><div class="stat-lbl">Total Litres</div></div>
+        <div class="stat"><div class="stat-icon">📅</div><div class="stat-val" id="fu-s-month">₹0</div><div class="stat-lbl">This Month</div></div>
+        <div class="stat"><div class="stat-icon">🚛</div><div class="stat-val" id="fu-s-vehicles">0</div><div class="stat-lbl">Vehicles Tracked</div></div>
+      </div>
+      <div class="card"><div id="fuelList"></div></div>
+    </div>
+
+    <!-- ===== EXPENSE ===== -->
+    <div class="section" id="sec-expense">
+      <div class="sec-hd">
+        <div><div class="sec-title">Expense Tracker</div><div class="sec-sub">Track all business expenses</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+          <input class="form-ctrl" style="width:160px;" placeholder="🔍 Description / ref…" id="expSearch" oninput="renderExpenses()">
+          <select class="form-ctrl" style="width:130px;" id="expCatFilter" onchange="renderExpenses()">
+            <option value="">All Categories</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Fuel">Fuel</option>
+            <option value="Toll">Toll</option>
+            <option value="Salary">Salary</option>
+            <option value="Vehicle Repair">Vehicle Repair</option>
+            <option value="Tyre">Tyre</option>
+            <option value="Insurance">Insurance</option>
+            <option value="Tax">Tax</option>
+            <option value="Office">Office</option>
+            <option value="Other">Other</option>
+          </select>
+          <button class="btn btn-primary" onclick="openExpenseForm()">+ Add Expense</button>
+        </div>
+      </div>
+      <div class="inline-form" id="expenseInlineForm">
+        <h4>Add Expense</h4>
+        <div class="g4" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Date *</label><input type="date" class="form-ctrl" id="exp-date"></div>
+          <div class="form-row"><label class="form-lbl">Category *</label>
+            <select class="form-ctrl" id="exp-cat">
+              <option>Maintenance</option><option>Fuel</option><option>Toll</option><option>Salary</option>
+              <option>Vehicle Repair</option><option>Tyre</option><option>Insurance</option><option>Tax</option><option>Office</option><option>Other</option>
+            </select>
+          </div>
+          <div class="form-row"><label class="form-lbl">Amount (₹) *</label><input type="number" class="form-ctrl" id="exp-amount" placeholder="0.00" step="0.01"></div>
+          <div class="form-row"><label class="form-lbl">Vehicle / Reference</label><input class="form-ctrl" id="exp-ref" placeholder="e.g. TN39AB1234 or Staff Name"></div>
+        </div>
+        <div class="g2" style="margin-bottom:12px;">
+          <div class="form-row"><label class="form-lbl">Description</label><input class="form-ctrl" id="exp-desc" placeholder="Brief description"></div>
+          <div class="form-row"><label class="form-lbl">Payment Mode</label>
+            <select class="form-ctrl" id="exp-pay"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Card</option><option>Credit</option></select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+          <button class="btn btn-ghost" onclick="closeExpenseForm()">Cancel</button>
+        </div>
+      </div>
+      <div class="g4" style="margin-bottom:18px;">
+        <div class="stat"><div class="stat-icon">💸</div><div class="stat-val" id="exp-s-total">₹0</div><div class="stat-lbl">Total Expenses</div></div>
+        <div class="stat"><div class="stat-icon">📅</div><div class="stat-val" id="exp-s-month">₹0</div><div class="stat-lbl">This Month</div></div>
+        <div class="stat"><div class="stat-icon">🔧</div><div class="stat-val" id="exp-s-maint">₹0</div><div class="stat-lbl">Maintenance</div></div>
+        <div class="stat"><div class="stat-icon">💼</div><div class="stat-val" id="exp-s-salary">₹0</div><div class="stat-lbl">Salary</div></div>
+      </div>
+      <div class="card"><div id="expenseList"></div></div>
+    </div>
+
+    <!-- ===== REPORTS ===== -->
+    <div class="section" id="sec-reports">
+      <div class="sec-hd">
+        <div><div class="sec-title">Reports</div><div class="sec-sub">Business summary & analytics</div></div>
+        <div style="display:flex;gap:8px;">
+          <select class="form-ctrl" style="width:130px;" id="rep-period" onchange="renderReports()">
+            <option value="week">This Week</option>
+            <option value="month" selected>This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="year">This Year</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+      </div>
+      <div class="g4" style="margin-bottom:18px;">
+        <div class="stat"><div class="stat-icon">🧾</div><div class="stat-val" id="rep-invoices">0</div><div class="stat-lbl">Total Invoices</div></div>
+        <div class="stat"><div class="stat-icon">💰</div><div class="stat-val" id="rep-revenue">₹0</div><div class="stat-lbl">Revenue</div></div>
+        <div class="stat"><div class="stat-icon">⏳</div><div class="stat-val" id="rep-pending">₹0</div><div class="stat-lbl">Pending</div></div>
+        <div class="stat"><div class="stat-icon">💸</div><div class="stat-val" id="rep-expense">₹0</div><div class="stat-lbl">Total Expense</div></div>
+      </div>
+      <div class="g2" style="margin-bottom:14px;">
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Top Customers</div></div>
+          <div id="rep-top-customers"></div>
+        </div>
+        <div class="card">
+          <div class="card-hd"><div class="card-title">Expense by Category</div></div>
+          <div id="rep-expense-cat"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title">Invoice Summary</div></div>
+        <div id="rep-inv-summary"></div>
+      </div>
+    </div>
+
+    <!-- ===== CUSTOMERS ===== -->
+    <div class="section" id="sec-customers">
+      <div class="sec-hd">
+        <div><div class="sec-title">Customers</div><div class="sec-sub">All customer profiles & history</div></div>
+        <button class="btn btn-primary" onclick="openModal('clientModal')">+ Add Customer</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+        <input class="form-ctrl" style="max-width:220px;" placeholder="🔍 Search customer…" id="custSearch" oninput="renderCustomers()">
+        <select class="form-ctrl" style="width:130px;" id="custTypeFilter" onchange="renderCustomers()">
+          <option value="">All Types</option>
+          <option>Regular</option><option>VIP</option><option>Corporate</option><option>One-time</option>
+        </select>
+      </div>
+      <div class="g4" style="margin-bottom:18px;">
+        <div class="stat"><div class="stat-icon">🧑‍💼</div><div class="stat-val" id="cust-s-total">0</div><div class="stat-lbl">Total Customers</div></div>
+        <div class="stat"><div class="stat-icon">⭐</div><div class="stat-val" id="cust-s-vip">0</div><div class="stat-lbl">VIP Customers</div></div>
+        <div class="stat"><div class="stat-icon">🏢</div><div class="stat-val" id="cust-s-corp">0</div><div class="stat-lbl">Corporate</div></div>
+        <div class="stat"><div class="stat-icon">💰</div><div class="stat-val" id="cust-s-revenue">₹0</div><div class="stat-lbl">Total Revenue</div></div>
+      </div>
+      <div class="g3" id="customersGrid"></div>
+    </div>
+
+  </div><!-- content -->
+</div><!-- main -->
+</div><!-- app -->
+
+<!-- ===== MODALS ===== -->
+<div class="overlay" id="clientModal">
+  <div class="modal modal-md">
+    <div class="modal-hd">
+      <div class="modal-title" id="clientModalTitle">Add Client</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('clientModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cm-id">
+      <div class="g2">
+        <div class="form-row"><label class="form-lbl">Client Name *</label><input class="form-ctrl" id="cm-name" placeholder="Company / Person name"></div>
+        <div class="form-row"><label class="form-lbl">Mobile *</label><input class="form-ctrl" id="cm-mobile" placeholder="9XXXXXXXXX"></div>
+      </div>
+      <div class="g2">
+        <div class="form-row"><label class="form-lbl">GSTIN</label><input class="form-ctrl" id="cm-gstin" placeholder="33XXXXX…" style="text-transform:uppercase;"></div>
+        <div class="form-row"><label class="form-lbl">Email</label><input class="form-ctrl" id="cm-email" placeholder="email@example.com"></div>
+      </div>
+      <div class="form-row"><label class="form-lbl">Address *</label><textarea class="form-ctrl" id="cm-addr" rows="2" placeholder="Door No, Street, City, State, PIN"></textarea></div>
+      <div class="g2">
+        <div class="form-row"><label class="form-lbl">State Name</label><input class="form-ctrl" id="cm-state" placeholder="Tamil Nadu"></div>
+        <div class="form-row"><label class="form-lbl">State Code</label><input class="form-ctrl" id="cm-scode" placeholder="33"></div>
+      </div>
+      <div class="form-row"><label class="form-lbl">Client Type</label>
+        <select class="form-ctrl" id="cm-type">
+          <option>Regular</option><option>VIP</option><option>Corporate</option><option>One-time</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal('clientModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClient()">Save Client</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="invViewModal">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <div class="modal-title">Invoice Details</div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="printFromView()">🖨 Print</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeModal('invViewModal')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="invViewBody" style="padding:16px;"></div>
+  </div>
+</div>
+
+<div class="overlay" id="clientHistModal">
+  <div class="modal modal-lg">
+    <div class="modal-hd">
+      <div class="modal-title" id="clientHistTitle">Purchase History</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('clientHistModal')">✕</button>
+    </div>
+    <div class="modal-body" id="clientHistBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="deleteModal">
+  <div class="modal modal-sm">
+    <div class="modal-hd"><div class="modal-title">Confirm Delete</div></div>
+    <div class="modal-body"><p style="font-size:14px;" id="deleteMsg">Are you sure?</p></div>
+    <div class="modal-ft">
+      <button class="btn btn-ghost" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="deleteConfirmBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="pArea"></div>
+<div class="toasts" id="toastContainer"></div>
+
+<script src="main.js"></script>
+<script src="api.js"></script>
+</body>
+</html>
